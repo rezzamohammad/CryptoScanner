@@ -6,6 +6,7 @@ import { ApiClient, wsClient } from '@/lib/apiClient';
 import { transformBackendData, mapSettingsToBackend, type FrontendCryptoData } from '@/lib/dataTransformers';
 import { handleApiError, retryWithBackoff, logError } from '@/lib/errorHandling';
 import { useTheme } from '@/hooks/useTheme';
+import { useFavorites } from '@/hooks/useFavorites';
 import { CryptoCard } from '@/components/CryptoCard';
 import { CryptoListItem } from '@/components/CryptoListItem';
 import { ControlsPanel } from '@/components/ControlsPanel';
@@ -52,6 +53,10 @@ const flexColumnReverseLeft = `
 export default function Home() {
   // Theme management using custom hook
   const { isDark, isThemeLoaded, setIsDark } = useTheme();
+  
+  // Favorites management using custom hook
+  const { favorites, isDataLoaded, toggleFavorite, setFavorites } = useFavorites(isThemeLoaded);
+  
   const [detectionModel, setDetectionModel] = useState('Logarithmic');
   const [priceSensitivity, setPriceSensitivity] = useState(0.9);
   const [volumeSensitivity, setVolumeSensitivity] = useState(1.5);
@@ -63,11 +68,7 @@ export default function Home() {
   const [displayCount, setDisplayCount] = useState(25);
   const [tickerSearch, setTickerSearch] = useState('');
   const [sortOption, setSortOption] = useState('volume-desc');
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
-
-  // State to track if localStorage data has been loaded
-  const [isDataLoaded, setIsDataLoaded] = useState(false);
 
   // Settings synchronization state management
   const [settingsState, setSettingsState] = useState({
@@ -90,34 +91,7 @@ export default function Home() {
   const [settingsLoading, setSettingsLoading] = useState(false);
 
   // Theme management is now handled by useTheme hook
-
-  // Load favorites from localStorage on mount
-  useEffect(() => {
-    const savedFavorites = localStorage.getItem('crypto-favorites');
-    if (savedFavorites) {
-      try {
-        const favArray = JSON.parse(savedFavorites);
-        setFavorites(new Set(favArray));
-        console.log('⭐ Loaded favorites from localStorage:', favArray);
-      } catch (error) {
-        console.error('❌ Error loading favorites:', error);
-      }
-    } else {
-      console.log('⭐ No saved favorites found, using empty set');
-    }
-
-    // Mark favorites as loaded
-    setIsDataLoaded(true);
-  }, []);
-
-  // Save favorites to localStorage whenever favorites change
-  useEffect(() => {
-    // Skip saving on initial load to prevent overwriting with empty set
-    if (favorites.size > 0 || isThemeLoaded) {
-      localStorage.setItem('crypto-favorites', JSON.stringify(Array.from(favorites)));
-      console.log('💾 Saved favorites to localStorage:', Array.from(favorites));
-    }
-  }, [favorites, isThemeLoaded]);
+  // Favorites management is now handled by useFavorites hook
 
   // Load detection settings from localStorage on mount
   useEffect(() => {
@@ -445,18 +419,7 @@ export default function Home() {
     return () => clearTimeout(timeoutId);
   }, [detectionModel, priceSensitivity, volumeSensitivity, isThemeLoaded, syncSettings]);
 
-  // Toggle favorite status
-  const toggleFavorite = (symbol: string) => {
-    setFavorites(prev => {
-      const newFavorites = new Set(prev);
-      if (newFavorites.has(symbol)) {
-        newFavorites.delete(symbol);
-      } else {
-        newFavorites.add(symbol);
-      }
-      return newFavorites;
-    });
-  };
+  // toggleFavorite function is now provided by useFavorites hook
 
   // Convert volume string to number for sorting
   const parseVolume = (volume: string) => {
