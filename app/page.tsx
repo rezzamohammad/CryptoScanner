@@ -7,6 +7,7 @@ import { transformBackendData, mapSettingsToBackend, type FrontendCryptoData } f
 import { handleApiError, retryWithBackoff, logError } from '@/lib/errorHandling';
 import { useTheme } from '@/hooks/useTheme';
 import { useFavorites } from '@/hooks/useFavorites';
+import { useDetectionSettings } from '@/hooks/useDetectionSettings';
 import { CryptoCard } from '@/components/CryptoCard';
 import { CryptoListItem } from '@/components/CryptoListItem';
 import { ControlsPanel } from '@/components/ControlsPanel';
@@ -57,9 +58,15 @@ export default function Home() {
   // Favorites management using custom hook
   const { favorites, isDataLoaded, toggleFavorite, setFavorites } = useFavorites(isThemeLoaded);
   
-  const [detectionModel, setDetectionModel] = useState('Logarithmic');
-  const [priceSensitivity, setPriceSensitivity] = useState(0.9);
-  const [volumeSensitivity, setVolumeSensitivity] = useState(1.5);
+  // Detection settings using custom hook
+  const { 
+    detectionModel, 
+    priceSensitivity, 
+    volumeSensitivity,
+    setDetectionModel,
+    setPriceSensitivity,
+    setVolumeSensitivity
+  } = useDetectionSettings(isThemeLoaded);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentFilter, setCurrentFilter] = useState('default');
   const [currentView, setCurrentView] = useState<'grid' | 'list'>('grid');
@@ -92,38 +99,7 @@ export default function Home() {
 
   // Theme management is now handled by useTheme hook
   // Favorites management is now handled by useFavorites hook
-
-  // Load detection settings from localStorage on mount
-  useEffect(() => {
-    const savedSettings = localStorage.getItem('crypto-detection-settings');
-    if (savedSettings) {
-      try {
-        const settings = JSON.parse(savedSettings);
-        if (settings.detectionModel) setDetectionModel(settings.detectionModel);
-        if (typeof settings.priceSensitivity === 'number') setPriceSensitivity(settings.priceSensitivity);
-        if (typeof settings.volumeSensitivity === 'number') setVolumeSensitivity(settings.volumeSensitivity);
-        console.log('📋 Loaded detection settings from localStorage:', settings);
-      } catch (error) {
-        console.error('❌ Error loading detection settings:', error);
-      }
-    } else {
-      console.log('📋 No saved detection settings found, using defaults');
-    }
-  }, []);
-
-  // Save detection settings to localStorage whenever they change
-  useEffect(() => {
-    // Skip saving on initial load (when isThemeLoaded is false)
-    if (!isThemeLoaded) return;
-
-    const settings = {
-      detectionModel,
-      priceSensitivity,
-      volumeSensitivity
-    };
-    localStorage.setItem('crypto-detection-settings', JSON.stringify(settings));
-    console.log('💾 Saved detection settings to localStorage:', settings);
-  }, [detectionModel, priceSensitivity, volumeSensitivity, isThemeLoaded]);
+  // Detection settings are now handled by useDetectionSettings hook
 
   // Load display preferences from localStorage on mount
   useEffect(() => {
