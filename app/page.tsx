@@ -9,6 +9,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useDetectionSettings } from '@/hooks/useDetectionSettings';
 import { useDisplaySettings } from '@/hooks/useDisplaySettings';
+import { useCryptoData } from '@/hooks/useCryptoData';
 import { CryptoCard } from '@/components/CryptoCard';
 import { CryptoListItem } from '@/components/CryptoListItem';
 import { ControlsPanel } from '@/components/ControlsPanel';
@@ -83,6 +84,14 @@ export default function Home() {
     setShowOnlyFavorites
   } = useDisplaySettings(isThemeLoaded, isDataLoaded, favorites.size);
   
+  // Crypto data management using custom hook
+  const { cryptoData, connectionStatus, lastUpdateTime, setCryptoData } = useCryptoData(
+    detectionModel,
+    priceSensitivity,
+    volumeSensitivity,
+    isThemeLoaded
+  );
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [currentFilter, setCurrentFilter] = useState('default');
 
@@ -96,12 +105,9 @@ export default function Home() {
     maxRetries: 3
   });
 
-  // API Data State
-  const [cryptoData, setCryptoData] = useState<FrontendCryptoData[]>([]);
+  // Legacy state (to be removed)
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
-  const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
 
   // Backend Settings State
   const [settingsLoading, setSettingsLoading] = useState(false);
@@ -110,137 +116,9 @@ export default function Home() {
   // Favorites management is now handled by useFavorites hook
   // Detection settings are now handled by useDetectionSettings hook
   // Display settings are now handled by useDisplaySettings hook
+  // Crypto data management is now handled by useCryptoData hook
 
-  // API Data Fetching - Initial Load
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        // Check if backend API is enabled
-        const useBackendApi = process.env.NEXT_PUBLIC_ENABLE_BACKEND_API === 'true';
-
-        if (useBackendApi) {
-          console.log('🔄 Fetching initial data from backend API...');
-
-          // Fetch market data with retry logic
-          const response = await retryWithBackoff(
-            () => ApiClient.getTickers({ limit: 100, sortBy: 'signal' }),
-            3,
-            (attempt, error) => {
-              console.log(`⚠️ API attempt ${attempt} failed:`, error.message);
-            }
-          );
-
-          if (response.success && response.data) {
-            const transformedData = transformBackendData(response.data);
-            setCryptoData(transformedData);
-            setLastUpdateTime(new Date());
-            setConnectionStatus('connected');
-            console.log(`✅ Loaded ${transformedData.length} cryptocurrencies from API`);
-          } else {
-            throw new Error('Invalid API response format');
-          }
-        } else {
-          // Use mock data fallback
-          console.log('📝 Using mock data (backend API disabled)');
-          setCryptoData(MOCK_CRYPTO_DATA);
-          setConnectionStatus('connected');
-        }
-
-      } catch (error) {
-        const apiError = handleApiError(error);
-        logError(apiError, 'Initial Data Fetch');
-        setError(apiError.message);
-        setConnectionStatus('disconnected');
-
-        // Fallback to mock data if enabled
-        const useMockFallback = process.env.NEXT_PUBLIC_ENABLE_MOCK_FALLBACK === 'true';
-        if (useMockFallback) {
-          console.log('🔄 Falling back to mock data due to API error');
-          setCryptoData(MOCK_CRYPTO_DATA);
-          setConnectionStatus('connected');
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    // Only fetch data after theme is loaded to prevent hydration issues
-    if (isThemeLoaded) {
-      fetchInitialData();
-    }
-  }, [isThemeLoaded]);
-
-  // WebSocket Real-time Updates
-  useEffect(() => {
-    const useBackendApi = process.env.NEXT_PUBLIC_ENABLE_BACKEND_API === 'true';
-
-    if (!useBackendApi || !isThemeLoaded) {
-      return;
-    }
-
-    console.log('🔌 Setting up WebSocket connection...');
-
-    // Handle real-time market data updates
-    const handleMarketUpdate = (payload: any) => {
-      try {
-        if (payload.data && Array.isArray(payload.data)) {
-          const transformedData = transformBackendData(payload.data);
-          setCryptoData(transformedData);
-          setLastUpdateTime(new Date());
-          setConnectionStatus('connected');
-
-          const debugWs = process.env.NEXT_PUBLIC_DEBUG_WEBSOCKET === 'true';
-          if (debugWs) {
-            console.log(`📊 WebSocket update: ${transformedData.length} cryptocurrencies`);
-          }
-        }
-      } catch (error) {
-        console.error('❌ Error processing WebSocket market update:', error);
-      }
-    };
-
-    // Handle connection status changes
-    const handleConnectionStatus = (payload: any) => {
-      if (payload.data?.binanceStatus) {
-        setConnectionStatus(payload.data.binanceStatus === 'connected' ? 'connected' : 'disconnected');
-      }
-    };
-
-    // Handle WebSocket connection events
-    const handleConnected = () => {
-      console.log('✅ WebSocket connected');
-      setConnectionStatus('connected');
-    };
-
-    const handleDisconnected = () => {
-      console.log('⚠️ WebSocket disconnected');
-      setConnectionStatus('disconnected');
-    };
-
-    const handleError = (error: any) => {
-      console.error('❌ WebSocket error:', error);
-      setConnectionStatus('disconnected');
-    };
-
-    // Set up WebSocket event listeners
-    wsClient.on('market_update', handleMarketUpdate);
-    wsClient.on('connection_status', handleConnectionStatus);
-    wsClient.on('connected', handleConnected);
-    wsClient.on('disconnected', handleDisconnected);
-    wsClient.on('error', handleError);
-
-    // Cleanup function
-    return () => {
-      wsClient.off('market_update', handleMarketUpdate);
-      wsClient.off('connection_status', handleConnectionStatus);
-      wsClient.off('connected', handleConnected);
-      wsClient.off('disconnected', handleDisconnected);
-      wsClient.off('error', handleError);
-    };
-  }, [isThemeLoaded]);
+  // WebSocket management is now handled by useCryptoData hook
 
   // Enhanced Settings Synchronization with Race Condition Prevention
   const syncSettings = useCallback(async (settings: {
