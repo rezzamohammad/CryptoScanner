@@ -8,6 +8,7 @@ import { handleApiError, retryWithBackoff, logError } from '@/lib/errorHandling'
 import { useTheme } from '@/hooks/useTheme';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useDetectionSettings } from '@/hooks/useDetectionSettings';
+import { useDisplaySettings } from '@/hooks/useDisplaySettings';
 import { CryptoCard } from '@/components/CryptoCard';
 import { CryptoListItem } from '@/components/CryptoListItem';
 import { ControlsPanel } from '@/components/ControlsPanel';
@@ -67,15 +68,23 @@ export default function Home() {
     setPriceSensitivity,
     setVolumeSensitivity
   } = useDetectionSettings(isThemeLoaded);
+  
+  // Display settings using custom hook
+  const {
+    currentView,
+    displayCount,
+    tickerSearch,
+    sortOption,
+    showOnlyFavorites,
+    setCurrentView,
+    setDisplayCount,
+    setTickerSearch,
+    setSortOption,
+    setShowOnlyFavorites
+  } = useDisplaySettings(isThemeLoaded, isDataLoaded, favorites.size);
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [currentFilter, setCurrentFilter] = useState('default');
-  const [currentView, setCurrentView] = useState<'grid' | 'list'>('grid');
-
-  // New state for crypto display features
-  const [displayCount, setDisplayCount] = useState(25);
-  const [tickerSearch, setTickerSearch] = useState('');
-  const [sortOption, setSortOption] = useState('volume-desc');
-  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
 
   // Settings synchronization state management
   const [settingsState, setSettingsState] = useState({
@@ -100,75 +109,7 @@ export default function Home() {
   // Theme management is now handled by useTheme hook
   // Favorites management is now handled by useFavorites hook
   // Detection settings are now handled by useDetectionSettings hook
-
-  // Load display preferences from localStorage on mount
-  useEffect(() => {
-    const savedDisplaySettings = localStorage.getItem('crypto-display-settings');
-    if (savedDisplaySettings) {
-      try {
-        const settings = JSON.parse(savedDisplaySettings);
-        if (settings.currentView) setCurrentView(settings.currentView);
-        if (typeof settings.displayCount === 'number') setDisplayCount(settings.displayCount);
-        if (typeof settings.tickerSearch === 'string') setTickerSearch(settings.tickerSearch);
-        if (settings.sortOption) setSortOption(settings.sortOption);
-
-        // CRITICAL FIX: Only restore showOnlyFavorites if we have favorites loaded
-        // This prevents the race condition where showOnlyFavorites=true but favorites is empty
-        if (typeof settings.showOnlyFavorites === 'boolean') {
-          if (!settings.showOnlyFavorites) {
-            // Always restore false state immediately
-            setShowOnlyFavorites(false);
-          }
-          // For true state, we'll handle it after favorites are loaded
-        }
-
-        console.log('📋 Loaded display settings from localStorage:', settings);
-      } catch (error) {
-        console.error('❌ Error loading display settings:', error);
-      }
-    } else {
-      console.log('📋 No saved display settings found, using defaults');
-    }
-  }, []);
-
-  // Restore showOnlyFavorites after favorites are loaded
-  useEffect(() => {
-    if (isDataLoaded) {
-      const savedDisplaySettings = localStorage.getItem('crypto-display-settings');
-      if (savedDisplaySettings) {
-        try {
-          const settings = JSON.parse(savedDisplaySettings);
-          if (typeof settings.showOnlyFavorites === 'boolean' && settings.showOnlyFavorites) {
-            // Only restore true state if we have favorites
-            if (favorites.size > 0) {
-              setShowOnlyFavorites(true);
-              console.log('⭐ Restored showOnlyFavorites after favorites loaded: true');
-            } else {
-              console.log('⭐ Not restoring showOnlyFavorites=true because no favorites exist');
-            }
-          }
-        } catch (error) {
-          console.error('❌ Error restoring showOnlyFavorites:', error);
-        }
-      }
-    }
-  }, [isDataLoaded, favorites.size]);
-
-  // Save display preferences to localStorage whenever they change
-  useEffect(() => {
-    // Skip saving on initial load (when isThemeLoaded is false)
-    if (!isThemeLoaded) return;
-
-    const settings = {
-      currentView,
-      displayCount,
-      tickerSearch,
-      sortOption,
-      showOnlyFavorites
-    };
-    localStorage.setItem('crypto-display-settings', JSON.stringify(settings));
-    console.log('💾 Saved display settings to localStorage:', settings);
-  }, [currentView, displayCount, tickerSearch, sortOption, showOnlyFavorites, isThemeLoaded]);
+  // Display settings are now handled by useDisplaySettings hook
 
   // API Data Fetching - Initial Load
   useEffect(() => {
