@@ -1,0 +1,241 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+  }
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Enhanced Neon Green Shadow Classes - 30% brighter with 30% more spread */
+@layer utilities {
+  .neon-green-sm {
+    box-shadow: 0 1.3px 5.2px rgba(16, 185, 129, 0.098), 0 0.65px 2px rgba(16, 185, 129, 0.065);
+  }
+  
+  .neon-green-md {
+    box-shadow: 0 2.6px 7.8px rgba(16, 185, 129, 0.13), 0 1.3px 3.9px rgba(16, 185, 129, 0.098);
+  }
+  
+  .neon-green-lg {
+    box-shadow: 0 5.2px 15.6px rgba(16, 185, 129, 0.163), 0 2.6px 7.8px rgba(16, 185, 129, 0.13);
+  }
+  
+  .neon-green-xl {
+    box-shadow: 0 7.8px 23.4px rgba(16, 185, 129, 0.195), 0 3.9px 11.7px rgba(16, 185, 129, 0.163);
+  }
+  
+  .neon-green-2xl {
+    box-shadow: 0 13px 32.5px rgba(16, 185, 129, 0.228), 0 6.5px 15.6px rgba(16, 185, 129, 0.195);
+  }
+  
+  .neon-teal-sm {
+    box-shadow: 0 1.3px 5.2px rgba(20, 184, 166, 0.098), 0 0.65px 2px rgba(20, 184, 166, 0.065);
+  }
+  
+  .neon-teal-md {
+    box-shadow: 0 2.6px 7.8px rgba(20, 184, 166, 0.13), 0 1.3px 3.9px rgba(20, 184, 166, 0.098);
+  }
+  
+  .neon-teal-lg {
+    box-shadow: 0 5.2px 15.6px rgba(20, 184, 166, 0.163), 0 2.6px 7.8px rgba(20, 184, 166, 0.13);
+  }
+  
+  /* Enhanced Red Neon Shadow Classes for DUMP signals - 30% brighter with 30% more spread */
+  .neon-red-sm {
+    box-shadow: 0 1.3px 5.2px rgba(239, 68, 68, 0.098), 0 0.65px 2px rgba(239, 68, 68, 0.065);
+  }
+  
+  .neon-red-md {
+    box-shadow: 0 2.6px 7.8px rgba(239, 68, 68, 0.13), 0 1.3px 3.9px rgba(239, 68, 68, 0.098);
+  }
+  
+  .neon-red-lg {
+    box-shadow: 0 5.2px 15.6px rgba(239, 68, 68, 0.163), 0 2.6px 7.8px rgba(239, 68, 68, 0.13);
+  }
+  
+  .neon-red-xl {
+    box-shadow: 0 7.8px 23.4px rgba(239, 68, 68, 0.195), 0 3.9px 11.7px rgba(239, 68, 68, 0.163);
+  }
+  
+  .neon-red-2xl {
+    box-shadow: 0 13px 32.5px rgba(239, 68, 68, 0.228), 0 6.5px 15.6px rgba(239, 68, 68, 0.195);
+  }
+  
+  .neon-red-glow {
+    box-shadow: 
+      0 0 13px rgba(239, 68, 68, 0.26),
+      0 0 26px rgba(239, 68, 68, 0.13),
+      0 0 39px rgba(239, 68, 68, 0.065);
+  }
+  
+  .neon-red-pulse {
+    animation: neon-red-pulse 2s ease-in-out infinite alternate;
+  }
+  
+  .neon-emerald-glow {
+    box-shadow: 
+      0 0 13px rgba(16, 185, 129, 0.26),
+      0 0 26px rgba(16, 185, 129, 0.13),
+      0 0 39px rgba(16, 185, 129, 0.065);
+  }
+  
+  .neon-emerald-pulse {
+    animation: neon-pulse 2s ease-in-out infinite alternate;
+  }
+  
+  @keyframes neon-pulse {
+    from {
+      box-shadow: 
+        0 0 13px rgba(16, 185, 129, 0.26),
+        0 0 26px rgba(16, 185, 129, 0.13),
+        0 0 39px rgba(16, 185, 129, 0.065);
+    }
+    to {
+      box-shadow: 
+        0 0 15.6px rgba(16, 185, 129, 0.39),
+        0 0 32.5px rgba(16, 185, 129, 0.195),
+        0 0 48.1px rgba(16, 185, 129, 0.098);
+    }
+  }
+  
+  @keyframes neon-red-pulse {
+    from {
+      box-shadow:
+        0 0 13px rgba(239, 68, 68, 0.26),
+        0 0 26px rgba(239, 68, 68, 0.13),
+        0 0 39px rgba(239, 68, 68, 0.065);
+    }
+    to {
+      box-shadow:
+        0 0 15.6px rgba(239, 68, 68, 0.39),
+        0 0 32.5px rgba(239, 68, 68, 0.195),
+        0 0 48.1px rgba(239, 68, 68, 0.098);
+    }
+  }
+
+  /* Custom Scrollbar Styling for Dark Mode - PumpDumpTracker */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9; /* Light mode default */
+    border-radius: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1; /* Light mode default */
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8; /* Light mode hover */
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:active {
+    background: #64748b; /* Light mode active */
+  }
+
+  /* Dark mode scrollbar styling */
+  .dark .custom-scrollbar::-webkit-scrollbar-track {
+    background: #1f2937; /* Dark gray-800 */
+  }
+
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #4b5563; /* Gray-600 */
+  }
+
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #6b7280; /* Gray-500 */
+  }
+
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb:active {
+    background: #9ca3af; /* Gray-400 */
+  }
+
+  /* Firefox Scrollbar Styling */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9; /* Light mode: thumb track */
+  }
+
+  .dark .custom-scrollbar {
+    scrollbar-color: #4b5563 #1f2937; /* Dark mode: thumb track */
+  }
+}

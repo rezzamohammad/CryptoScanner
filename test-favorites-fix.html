@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favorites Fix Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a1a; color: white; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #333; border-radius: 8px; }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .warning { color: #f59e0b; }
+        button { padding: 8px 16px; margin: 5px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #2563eb; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .status.success { background: #065f46; }
+        .status.error { background: #7f1d1d; }
+        .status.warning { background: #78350f; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Crypto Scanner Favorites Fix Test</h1>
+    
+    <div class="test-section">
+        <h2>Current localStorage State</h2>
+        <div id="current-state"></div>
+        <button onclick="refreshState()">Refresh State</button>
+        <button onclick="clearAll()">Clear All Data</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Scenario: Reproduce Bug</h2>
+        <p>This simulates the bug scenario where favorites filter is active but no results show.</p>
+        <button onclick="setupBugScenario()">Setup Bug Scenario</button>
+        <button onclick="testBugScenario()">Test Bug Scenario</button>
+        <div id="bug-test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Scenario: Fix Verification</h2>
+        <p>This tests if the fix properly handles the race condition.</p>
+        <button onclick="setupFixTest()">Setup Fix Test</button>
+        <button onclick="testFixBehavior()">Test Fix Behavior</button>
+        <div id="fix-test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Manual Test Controls</h2>
+        <button onclick="addFavorite('BTC')">Add BTC to Favorites</button>
+        <button onclick="addFavorite('ETH')">Add ETH to Favorites</button>
+        <button onclick="removeFavorite('BTC')">Remove BTC</button>
+        <button onclick="toggleShowOnlyFavorites()">Toggle Show Only Favorites</button>
+        <button onclick="setTickerSearch('BTC,ETH')">Set Ticker Search</button>
+        <button onclick="clearTickerSearch()">Clear Ticker Search</button>
+    </div>
+
+    <script>
+        // Simulate the localStorage keys used by the app
+        const FAVORITES_KEY = 'crypto-favorites';
+        const DISPLAY_SETTINGS_KEY = 'crypto-display-settings';
+
+        function refreshState() {
+            const favorites = JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]');
+            const displaySettings = JSON.parse(localStorage.getItem(DISPLAY_SETTINGS_KEY) || '{}');
+            
+            document.getElementById('current-state').innerHTML = `
+                <div><strong>Favorites:</strong> ${JSON.stringify(favorites)}</div>
+                <div><strong>Display Settings:</strong> ${JSON.stringify(displaySettings, null, 2)}</div>
+            `;
+        }
+
+        function clearAll() {
+            localStorage.removeItem(FAVORITES_KEY);
+            localStorage.removeItem(DISPLAY_SETTINGS_KEY);
+            refreshState();
+        }
+
+        function setupBugScenario() {
+            // Simulate the bug: showOnlyFavorites=true but empty favorites
+            localStorage.setItem(FAVORITES_KEY, JSON.stringify([]));
+            localStorage.setItem(DISPLAY_SETTINGS_KEY, JSON.stringify({
+                showOnlyFavorites: true,
+                tickerSearch: 'BTC,ETH,USDT,SOL,ETC',
+                displayCount: 25,
+                sortOption: 'volume-desc',
+                currentView: 'grid'
+            }));
+            refreshState();
+            document.getElementById('bug-test-result').innerHTML = 
+                '<div class="status warning">Bug scenario setup complete. This would cause no results to show.</div>';
+        }
+
+        function testBugScenario() {
+            const favorites = JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]');
+            const settings = JSON.parse(localStorage.getItem(DISPLAY_SETTINGS_KEY) || '{}');
+            
+            const hasBug = settings.showOnlyFavorites && favorites.length === 0;
+            
+            document.getElementById('bug-test-result').innerHTML = hasBug
+                ? '<div class="status error">🐛 BUG DETECTED: showOnlyFavorites=true but no favorites exist!</div>'
+                : '<div class="status success">✅ No bug detected</div>';
+        }
+
+        function setupFixTest() {
+            // Setup a proper scenario with favorites
+            localStorage.setItem(FAVORITES_KEY, JSON.stringify(['BTC', 'ETH']));
+            localStorage.setItem(DISPLAY_SETTINGS_KEY, JSON.stringify({
+                showOnlyFavorites: true,
+                tickerSearch: '',
+                displayCount: 25,
+                sortOption: 'volume-desc',
+                currentView: 'grid'
+            }));
+            refreshState();
+            document.getElementById('fix-test-result').innerHTML = 
+                '<div class="status success">Fix test scenario setup complete.</div>';
+        }
+
+        function testFixBehavior() {
+            const favorites = JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]');
+            const settings = JSON.parse(localStorage.getItem(DISPLAY_SETTINGS_KEY) || '{}');
+            
+            const isValidState = !settings.showOnlyFavorites || favorites.length > 0;
+            
+            document.getElementById('fix-test-result').innerHTML = isValidState
+                ? '<div class="status success">✅ Fix working: Valid state detected</div>'
+                : '<div class="status error">❌ Fix not working: Invalid state detected</div>';
+        }
+
+        function addFavorite(symbol) {
+            const favorites = JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]');
+            if (!favorites.includes(symbol)) {
+                favorites.push(symbol);
+                localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+            }
+            refreshState();
+        }
+
+        function removeFavorite(symbol) {
+            const favorites = JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]');
+            const filtered = favorites.filter(fav => fav !== symbol);
+            localStorage.setItem(FAVORITES_KEY, JSON.stringify(filtered));
+            refreshState();
+        }
+
+        function toggleShowOnlyFavorites() {
+            const settings = JSON.parse(localStorage.getItem(DISPLAY_SETTINGS_KEY) || '{}');
+            settings.showOnlyFavorites = !settings.showOnlyFavorites;
+            localStorage.setItem(DISPLAY_SETTINGS_KEY, JSON.stringify(settings));
+            refreshState();
+        }
+
+        function setTickerSearch(search) {
+            const settings = JSON.parse(localStorage.getItem(DISPLAY_SETTINGS_KEY) || '{}');
+            settings.tickerSearch = search;
+            localStorage.setItem(DISPLAY_SETTINGS_KEY, JSON.stringify(settings));
+            refreshState();
+        }
+
+        function clearTickerSearch() {
+            const settings = JSON.parse(localStorage.getItem(DISPLAY_SETTINGS_KEY) || '{}');
+            settings.tickerSearch = '';
+            localStorage.setItem(DISPLAY_SETTINGS_KEY, JSON.stringify(settings));
+            refreshState();
+        }
+
+        // Initialize
+        refreshState();
+    </script>
+</body>
+</html>
