@@ -95,22 +95,9 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentFilter, setCurrentFilter] = useState('default');
 
-  // Settings synchronization state management
-  const [settingsState, setSettingsState] = useState({
-    isLoading: false,
-    isSyncing: false,
-    lastSyncTime: null as number | null,
-    pendingChanges: false,
-    syncRetryCount: 0,
-    maxRetries: 3
-  });
-
-  // Legacy state (to be removed)
+  // Legacy state (to be removed in future cleanup)
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Backend Settings State
-  const [settingsLoading, setSettingsLoading] = useState(false);
 
   // Theme management is now handled by useTheme hook
   // Favorites management is now handled by useFavorites hook
@@ -120,101 +107,9 @@ export default function Home() {
 
   // WebSocket management is now handled by useCryptoData hook
 
-  // Enhanced Settings Synchronization with Race Condition Prevention
-  const syncSettings = useCallback(async (settings: {
-    detectionModel: string;
-    priceSensitivity: number;
-    volumeSensitivity: number;
-  }) => {
-    // Prevent concurrent sync operations
-    if (settingsState.isSyncing) {
-      console.log('⚠️ Settings sync already in progress, skipping...');
-      return;
-    }
+  // Settings synchronization is now handled by useCryptoData hook
 
-    setSettingsState(prev => ({ ...prev, isSyncing: true }));
-    setSettingsLoading(true);
-
-    try {
-      // Step 1: Save to localStorage first (immediate persistence)
-      const localSettings = {
-        detectionModel: settings.detectionModel,
-        priceSensitivity: settings.priceSensitivity,
-        volumeSensitivity: settings.volumeSensitivity
-      };
-      localStorage.setItem('crypto-detection-settings', JSON.stringify(localSettings));
-      console.log('💾 Settings saved to localStorage:', localSettings);
-
-      // Step 2: Sync with backend if API is enabled
-      const useBackendApi = process.env.NEXT_PUBLIC_ENABLE_BACKEND_API === 'true';
-      if (useBackendApi) {
-        const backendSettings = mapSettingsToBackend(settings);
-
-        // Update backend settings
-        await ApiClient.updateSettings(backendSettings);
-
-        // Update WebSocket subscription with new settings
-        wsClient.updateSettings(backendSettings);
-
-        console.log('⚙️ Settings synchronized with backend:', backendSettings);
-      }
-
-      // Success: Update sync state
-      setSettingsState(prev => ({
-        ...prev,
-        isSyncing: false,
-        lastSyncTime: Date.now(),
-        pendingChanges: false,
-        syncRetryCount: 0
-      }));
-
-    } catch (error) {
-      const apiError = handleApiError(error);
-      logError(apiError, 'Settings Sync');
-      console.error('❌ Failed to sync settings with backend:', apiError.message);
-
-      // Handle sync failure with retry logic
-      setSettingsState(prev => {
-        const newRetryCount = prev.syncRetryCount + 1;
-        const shouldRetry = newRetryCount < prev.maxRetries;
-
-        if (shouldRetry) {
-          console.log(`🔄 Scheduling settings sync retry ${newRetryCount}/${prev.maxRetries}`);
-          // Schedule retry with exponential backoff
-          setTimeout(() => {
-            syncSettings(settings);
-          }, Math.min(1000 * Math.pow(2, newRetryCount - 1), 10000));
-        }
-
-        return {
-          ...prev,
-          isSyncing: false,
-          pendingChanges: !shouldRetry, // Mark as pending if no more retries
-          syncRetryCount: newRetryCount
-        };
-      });
-    } finally {
-      setSettingsLoading(false);
-    }
-  }, [settingsState.isSyncing, settingsState.syncRetryCount, settingsState.maxRetries]);
-
-  // Settings change handler with debouncing
-  useEffect(() => {
-    if (!isThemeLoaded) return;
-
-    // Debounce settings updates to avoid too many sync calls
-    const timeoutId = setTimeout(() => {
-      syncSettings({
-        detectionModel,
-        priceSensitivity,
-        volumeSensitivity
-      });
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
-  }, [detectionModel, priceSensitivity, volumeSensitivity, isThemeLoaded, syncSettings]);
-
-  // toggleFavorite function is now provided by useFavorites hook
+  // Settings synchronization is now handled by custom hooks
 
   // Convert volume string to number for sorting
   const parseVolume = (volume: string) => {
@@ -568,7 +463,7 @@ export default function Home() {
               setPriceSensitivity={setPriceSensitivity}
               volumeSensitivity={volumeSensitivity}
               setVolumeSensitivity={setVolumeSensitivity}
-              settingsLoading={settingsLoading}
+              settingsLoading={false}
             />
           </div>
 
