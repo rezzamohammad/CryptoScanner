@@ -1,22 +1,25 @@
 graph TB
-    subgraph "BEFORE: Monolithic Architecture"
-        A1[app/page.tsx<br/>1,018 lines<br/>God Component] --> A2[AIStrategyModal.tsx<br/>1,818 lines<br/>Massive Modal]
+    subgraph "CURRENT: Post-AIStrategyModal State"
+        A1[app/page.tsx<br/>1,019 lines<br/>God Component] --> A2[AIStrategyModal.tsx<br/>320 lines<br/>REFACTORED]
         A1 --> A3[PumpDumpTracker.tsx<br/>809 lines<br/>Complex Tracker]
-        A1 --> A4[lib/apiClient.ts<br/>405 lines<br/>Mixed Concerns]
-        A1 --> A5[Inline CSS & Logic<br/>Mixed throughout]
+        A1 --> A4[CryptoDetailModal.tsx<br/>491 lines<br/>Feature-Heavy Modal]
+        A1 --> A5[CryptoDisplayControls.tsx<br/>451 lines<br/>Multiple UI Concerns]
+        A1 --> A6[lib/apiClient.ts<br/>442 lines<br/>Mixed Concerns]
         
         style A1 fill:#ff6b6b,stroke:#d63031,color:#fff
-        style A2 fill:#ff6b6b,stroke:#d63031,color:#fff
+        style A2 fill:#00b894,stroke:#00a085,color:#fff
         style A3 fill:#ff6b6b,stroke:#d63031,color:#fff
         style A4 fill:#fdcb6e,stroke:#e17055,color:#000
+        style A5 fill:#fdcb6e,stroke:#e17055,color:#000
+        style A6 fill:#fdcb6e,stroke:#e17055,color:#000
     end
     
-    subgraph "AFTER: Clean Architecture"
+    subgraph "TARGET: Clean Architecture"
         subgraph "Presentation Layer"
             B1[CryptoScanner.tsx<br/>~80 lines]
             B2[CryptoGrid.tsx<br/>~70 lines]
             B3[CryptoList.tsx<br/>~60 lines]
-            B4[AIStrategyModal.tsx<br/>~100 lines]
+            B4[AIStrategyModal.tsx<br/>~100 lines<br/>COMPLETED]
             B5[PumpDumpTracker.tsx<br/>~100 lines]
         end
         
