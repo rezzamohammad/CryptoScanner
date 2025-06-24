@@ -5,6 +5,7 @@ import { Zap, Star } from 'lucide-react';
 import { ApiClient, wsClient } from '@/lib/apiClient';
 import { transformBackendData, mapSettingsToBackend, type FrontendCryptoData } from '@/lib/dataTransformers';
 import { handleApiError, retryWithBackoff, logError } from '@/lib/errorHandling';
+import { useTheme } from '@/hooks/useTheme';
 import { CryptoCard } from '@/components/CryptoCard';
 import { CryptoListItem } from '@/components/CryptoListItem';
 import { ControlsPanel } from '@/components/ControlsPanel';
@@ -49,9 +50,8 @@ const flexColumnReverseLeft = `
 `;
 
 export default function Home() {
-  // Initialize theme state to false (light mode) to prevent hydration mismatch
-  const [isDark, setIsDark] = useState(false);
-  const [isThemeLoaded, setIsThemeLoaded] = useState(false);
+  // Theme management using custom hook
+  const { isDark, isThemeLoaded, setIsDark } = useTheme();
   const [detectionModel, setDetectionModel] = useState('Logarithmic');
   const [priceSensitivity, setPriceSensitivity] = useState(0.9);
   const [volumeSensitivity, setVolumeSensitivity] = useState(1.5);
@@ -89,35 +89,7 @@ export default function Home() {
   // Backend Settings State
   const [settingsLoading, setSettingsLoading] = useState(false);
 
-  // Load theme preference on mount to prevent hydration mismatch
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('crypto-scanner-theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    const shouldUseDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
-    setIsDark(shouldUseDark);
-    setIsThemeLoaded(true);
-    
-    // Apply theme to document element
-    if (shouldUseDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, []);
-
-  // Update document theme class when isDark changes
-  useEffect(() => {
-    if (isThemeLoaded) {
-      if (isDark) {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('crypto-scanner-theme', 'dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('crypto-scanner-theme', 'light');
-      }
-    }
-  }, [isDark, isThemeLoaded]);
+  // Theme management is now handled by useTheme hook
 
   // Load favorites from localStorage on mount
   useEffect(() => {
