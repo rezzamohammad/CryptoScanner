@@ -117,9 +117,7 @@ export default function Home() {
     setShowOnlyFavorites
   );
 
-  // Legacy state (to be removed in future cleanup)
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Legacy state removed - now using connectionStatus from useCryptoData hook
 
   // Theme management is now handled by useTheme hook
   // Favorites management is now handled by useFavorites hook
@@ -155,14 +153,14 @@ export default function Home() {
     return null;
   }
 
-  // Show loading state while fetching initial data
-  if (isLoading) {
+  // Show loading state while theme is loading or connecting to data
+  if (!isThemeLoaded || connectionStatus === 'connecting') {
     return <LoadingState isDark={isDark} />;
   }
 
-  // Show error state if there's an error and no fallback data
-  if (error && cryptoData.length === 0) {
-    return <ErrorState isDark={isDark} error={error} />;
+  // Show error state if connection failed and no fallback data
+  if (connectionStatus === 'error' && cryptoData.length === 0) {
+    return <ErrorState isDark={isDark} error="Failed to connect to market data" />;
   }
 
   return (
@@ -175,7 +173,7 @@ export default function Home() {
       <style>{flexColumnReverseLeft}</style>
       <div className="container mx-auto px-4 py-6">
         {/* Connection Status Banner */}
-        <ConnectionBanner error={error} connectionStatus={connectionStatus} />
+        <ConnectionBanner error={connectionStatus === 'error' ? 'Connection failed' : null} connectionStatus={connectionStatus} />
 
         {/* Header */}
         <AppHeader 
