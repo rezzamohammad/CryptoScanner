@@ -20,6 +20,13 @@ import { FilterDropdown } from '@/components/FilterDropdown';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ViewToggle } from '@/components/ViewToggle';
 import { CryptoDisplayControls } from '@/components/CryptoDisplayControls';
+import { LoadingState } from '@/components/LoadingState';
+import { ErrorState } from '@/components/ErrorState';
+import { ConnectionBanner } from '@/components/ConnectionBanner';
+import { AppHeader } from '@/components/AppHeader';
+import { CryptoGrid } from '@/components/CryptoGrid';
+import { CryptoList } from '@/components/CryptoList';
+import { NoResultsMessage } from '@/components/NoResultsMessage';
 
 // Mock data for fallback (will be replaced by API data)
 const MOCK_CRYPTO_DATA = [
@@ -150,74 +157,12 @@ export default function Home() {
 
   // Show loading state while fetching initial data
   if (isLoading) {
-    return (
-      <div className={`min-h-screen flex items-center justify-center ${
-        isDark
-          ? 'bg-gradient-to-br from-[#00110c] via-black to-[#110000]'
-          : 'bg-gradient-to-br from-gray-50 via-white to-gray-100'
-      }`}>
-        <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl flex items-center justify-center neon-emerald-glow mb-4 mx-auto">
-            <Zap className="w-8 h-8 text-white animate-pulse" />
-          </div>
-          <h2 className={`text-xl font-bold mb-2 ${
-            isDark ? 'text-white' : 'text-gray-900'
-          }`}>
-            Loading CryptoScanner
-          </h2>
-          <p className={`text-sm ${
-            isDark ? 'text-gray-400' : 'text-gray-600'
-          }`}>
-            Connecting to market data...
-          </p>
-        </div>
-      </div>
-    );
+    return <LoadingState isDark={isDark} />;
   }
 
   // Show error state if there's an error and no fallback data
   if (error && cryptoData.length === 0) {
-    return (
-      <div className={`min-h-screen flex items-center justify-center ${
-        isDark
-          ? 'bg-gradient-to-br from-[#00110c] via-black to-[#110000]'
-          : 'bg-gradient-to-br from-gray-50 via-white to-gray-100'
-      }`}>
-        <div className="text-center max-w-md mx-auto px-4">
-          <div className="w-16 h-16 bg-red-500/20 rounded-2xl flex items-center justify-center mb-4 mx-auto">
-            <span className="text-2xl">⚠️</span>
-          </div>
-          <h2 className={`text-xl font-bold mb-2 ${
-            isDark ? 'text-white' : 'text-gray-900'
-          }`}>
-            Connection Failed
-          </h2>
-          <p className={`text-sm mb-4 ${
-            isDark ? 'text-gray-400' : 'text-gray-600'
-          }`}>
-            {error}
-          </p>
-          <div className="space-y-2">
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 neon-green-md w-full"
-            >
-              Retry Connection
-            </button>
-            <button
-              onClick={() => {
-                // Enable mock fallback and reload
-                localStorage.setItem('force-mock-data', 'true');
-                window.location.reload();
-              }}
-              className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 w-full"
-            >
-              Use Demo Mode
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+    return <ErrorState isDark={isDark} error={error} />;
   }
 
   return (
@@ -230,74 +175,15 @@ export default function Home() {
       <style>{flexColumnReverseLeft}</style>
       <div className="container mx-auto px-4 py-6">
         {/* Connection Status Banner */}
-        {error && connectionStatus === 'disconnected' && (
-          <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-3 rounded-lg mb-6 text-center">
-            <div className="flex items-center justify-center space-x-2">
-              <span className="font-medium">⚠️ Connection Issue:</span>
-              <span>{error}</span>
-              <button
-                onClick={() => window.location.reload()}
-                className="ml-2 underline hover:no-underline font-medium"
-              >
-                Retry
-              </button>
-            </div>
-          </div>
-        )}
+        <ConnectionBanner error={error} connectionStatus={connectionStatus} />
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-3">
-            <div className="relative">
-              <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center neon-emerald-glow">
-                <Zap className="w-5 h-5 text-white" />
-              </div>
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full animate-pulse neon-emerald-pulse"></div>
-            </div>
-            <h1 className={`text-2xl font-bold ${
-              isDark ? 'text-white' : 'text-gray-900'
-            }`}>
-              Crypto<span className="text-emerald-500" style={{
-                textShadow: '0 0 5px rgba(16, 185, 129, 0.25)'
-              }}>Scanner</span>
-            </h1>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <div className={`w-2 h-2 rounded-full ${
-                connectionStatus === 'connected'
-                  ? 'bg-emerald-500 neon-emerald-pulse'
-                  : connectionStatus === 'connecting'
-                  ? 'bg-yellow-500 animate-pulse'
-                  : 'bg-red-500 animate-pulse'
-              }`}></div>
-              <span className={`text-sm ${
-                isDark ? 'text-gray-300' : 'text-gray-600'
-              }`}>
-                {connectionStatus === 'connected' ? 'connected' :
-                 connectionStatus === 'connecting' ? 'connecting...' : 'disconnected'}
-              </span>
-              {lastUpdateTime && connectionStatus === 'connected' && (
-                <span className={`text-xs ${
-                  isDark ? 'text-gray-500' : 'text-gray-400'
-                }`}>
-                  • {lastUpdateTime.toLocaleTimeString()}
-                </span>
-              )}
-              {/* {settingsLoading && (
-                <span className={`text-xs px-2 py-1 rounded-lg ${
-                  isDark ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-600'
-                }`}>
-                  ⚙️ Syncing...
-                </span>
-              )} */}
-            </div>
-            
-            {/* New Slider Theme Toggle */}
-            <ThemeToggle isDark={isDark} onToggle={handleThemeToggle} />
-          </div>
-        </div>
+        <AppHeader 
+          isDark={isDark}
+          connectionStatus={connectionStatus}
+          lastUpdateTime={lastUpdateTime}
+          onThemeToggle={handleThemeToggle}
+        />
 
         {/* Controls and Search Section */}
         <div className="mb-8">
@@ -399,93 +285,29 @@ export default function Home() {
 
         {/* Crypto Cards/List */}
         {currentView === 'grid' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCryptoData.map((crypto) => (
-              <div key={crypto.symbol} className="relative">
-                {/* Favorite Star Overlay */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleFavorite(crypto.symbol);
-                  }}
-                  className={`absolute top-2 right-2 z-10 p-2 rounded-full transition-all duration-300 ${
-                    favorites.has(crypto.symbol)
-                      ? 'bg-yellow-500 text-white neon-teal-sm'
-                      : 'bg-black/20 text-white/70 hover:bg-black/40 hover:text-white'
-                  }`}
-                  title={favorites.has(crypto.symbol) ? 'Remove from favorites' : 'Add to favorites'}
-                >
-                  <Star className={`w-4 h-4 ${
-                    favorites.has(crypto.symbol) ? 'fill-current' : ''
-                  }`} />
-                </button>
-                
-                <CryptoCard
-                  key={crypto.symbol}
-                  isDark={isDark}
-                  {...crypto}
-                />
-              </div>
-            ))}
-          </div>
+          <CryptoGrid 
+            cryptoData={filteredCryptoData}
+            isDark={isDark}
+            favorites={favorites}
+            onToggleFavorite={toggleFavorite}
+          />
         ) : (
-          <div className="space-y-2">
-            {/* List Items */}
-            {filteredCryptoData.map((crypto) => (
-              <div key={crypto.symbol} className="relative">
-                {/* Favorite Star for List View */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleFavorite(crypto.symbol);
-                  }}
-                  className={`absolute top-2 left-2 z-10 p-1 rounded-full transition-all duration-300 ${
-                    favorites.has(crypto.symbol)
-                      ? 'bg-yellow-500 text-white neon-teal-sm'
-                      : 'bg-black/20 text-white/70 hover:bg-black/40 hover:text-white'
-                  }`}
-                  title={favorites.has(crypto.symbol) ? 'Remove from favorites' : 'Add to favorites'}
-                >
-                  <Star className={`w-3 h-3 ${
-                    favorites.has(crypto.symbol) ? 'fill-current' : ''
-                  }`} />
-                </button>
-                
-                <CryptoListItem
-                  key={crypto.symbol}
-                  isDark={isDark}
-                  {...crypto}
-                />
-              </div>
-            ))}
-          </div>
+          <CryptoList 
+            cryptoData={filteredCryptoData}
+            isDark={isDark}
+            favorites={favorites}
+            onToggleFavorite={toggleFavorite}
+          />
         )}
 
         {/* No Results Message */}
-        {(searchQuery || tickerSearch || currentFilter !== 'default' || showOnlyFavorites) && filteredCryptoData.length === 0 && (
-          <div className="text-center py-12">
-            <div className={`text-6xl mb-4 ${
-              isDark ? 'text-gray-700' : 'text-gray-300'
-            }`}>
-              {showOnlyFavorites ? '⭐' : '🔍'}
-            </div>
-            <h3 className={`text-xl font-semibold mb-2 ${
-              isDark ? 'text-white' : 'text-gray-900'
-            }`}>
-              {showOnlyFavorites ? 'No favorites yet' : 'No cryptocurrencies found'}
-            </h3>
-            <p className={`${
-              isDark ? 'text-gray-400' : 'text-gray-600'
-            }`}>
-              {showOnlyFavorites 
-                ? 'Start adding cryptocurrencies to your favorites by clicking the star icon'
-                : searchQuery || tickerSearch
-                  ? 'Try searching for different ticker symbols or names'
-                  : 'Try adjusting your filter settings'
-              }
-            </p>
-          </div>
-        )}
+        <NoResultsMessage 
+          isDark={isDark}
+          showOnlyFavorites={showOnlyFavorites}
+          searchQuery={searchQuery}
+          tickerSearch={tickerSearch}
+          hasFilters={Boolean((searchQuery || tickerSearch || currentFilter !== 'default' || showOnlyFavorites) && filteredCryptoData.length === 0)}
+        />
       </div>
     </div>
   );
