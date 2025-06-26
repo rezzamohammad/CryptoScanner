@@ -156,7 +156,7 @@ export function transformBackendData(backendData: BackendCryptoData[]): Frontend
       symbol,
       name,
       price: crypto.price,
-      change: crypto.priceChangePercent,
+      change: crypto.priceChangePercent ?? 0,
       volume: formattedVolume,
       signal: crypto.signal,
       chartData: crypto.priceHistory || [],

@@ -31,8 +31,8 @@ export function CryptoListItem({
 }: CryptoListItemProps) {
   const [showAIModal, setShowAIModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const isPositive = change > 0;
-  const isNeutral = change === 0;
+  const isPositive = (change ?? 0) > 0;
+  const isNeutral = (change ?? 0) === 0;
   const isPumpSignal = signal === 'PUMP';
   const isDumpSignal = signal === 'DUMP';
   const isNeutralSignal = signal === 'NEUTRAL';
@@ -211,7 +211,7 @@ export function CryptoListItem({
                 ) : !isNeutral ? (
                   <TrendingDown className="w-3 h-3 mr-1 flex-shrink-0" />
                 ) : null}
-                <span className="truncate">{change > 0 ? '+' : ''}{change.toFixed(2)}%</span>
+                <span className="truncate">{(change ?? 0) > 0 ? '+' : ''}{(change ?? 0).toFixed(2)}%</span>
               </div>
               <div className={`text-xs ${
                 isDark ? 'text-gray-400' : 'text-gray-600'

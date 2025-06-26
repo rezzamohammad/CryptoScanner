@@ -143,7 +143,7 @@ export function CryptoDetailModal({ isOpen, onClose, crypto, isDark }: CryptoDet
   if (!isOpen) return null;
 
   const expandedData = generateExpandedChartData();
-  const isPositive = crypto.change > 0;
+  const isPositive = (crypto.change ?? 0) > 0;
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-hidden">
@@ -197,7 +197,7 @@ export function CryptoDetailModal({ isOpen, onClose, crypto, isDark }: CryptoDet
                 ) : (
                   <TrendingDown className="w-4 h-4" />
                 )}
-                {crypto.change > 0 ? '+' : ''}{crypto.change.toFixed(2)}%
+                {(crypto.change ?? 0) > 0 ? '+' : ''}{(crypto.change ?? 0).toFixed(2)}%
               </div>
             </div>
           </div>

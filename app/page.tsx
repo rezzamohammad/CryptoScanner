@@ -28,29 +28,7 @@ import { CryptoGrid } from '@/components/CryptoGrid';
 import { CryptoList } from '@/components/CryptoList';
 import { NoResultsMessage } from '@/components/NoResultsMessage';
 
-// Mock data for fallback (will be replaced by API data)
-const MOCK_CRYPTO_DATA = [
-  {
-    symbol: 'BTC',
-    name: 'Bitcoin',
-    price: 0,
-    change: 0,
-    volume: '0',
-    signal: 'NEUTRAL',
-    chartData: [0, 0, 0, 0, 0, 0],
-    detectionTime: new Date('2025-01-27T09:15:00'),
-  },
-  {
-    symbol: 'ETH',
-    name: 'Ethereum',
-    price: 0,
-    change: 0,
-    volume: '0',
-    signal: 'NEUTRAL',
-    chartData: [0, 0, 0, 0, 0, 0],
-    detectionTime: new Date('2025-01-27T08:45:00'),
-  },
-];
+
 
 // Add this style block at the top (or use your CSS file)
 const flexColumnReverseLeft = `
@@ -69,10 +47,12 @@ export default function Home() {
   const { favorites, isDataLoaded, toggleFavorite, setFavorites } = useFavorites(isThemeLoaded);
   
   // Detection settings using custom hook
-  const { 
-    detectionModel, 
-    priceSensitivity, 
+  const {
+    detectionModel,
+    priceSensitivity,
     volumeSensitivity,
+    settingsLoading,
+    backendSyncing,
     setDetectionModel,
     setPriceSensitivity,
     setVolumeSensitivity
@@ -176,10 +156,11 @@ export default function Home() {
         <ConnectionBanner error={connectionStatus === 'error' ? 'Connection failed' : null} connectionStatus={connectionStatus} />
 
         {/* Header */}
-        <AppHeader 
+        <AppHeader
           isDark={isDark}
           connectionStatus={connectionStatus}
           lastUpdateTime={lastUpdateTime}
+          backendSyncing={backendSyncing}
           onThemeToggle={handleThemeToggle}
         />
 
@@ -195,7 +176,7 @@ export default function Home() {
               setPriceSensitivity={setPriceSensitivity}
               volumeSensitivity={volumeSensitivity}
               setVolumeSensitivity={setVolumeSensitivity}
-              settingsLoading={false}
+              settingsLoading={settingsLoading}
             />
           </div>
 

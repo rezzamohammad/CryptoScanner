@@ -113,7 +113,7 @@ export function PumpDumpTracker({ isDark, cryptoData }: PumpDumpTrackerProps) {
             name: crypto.name,
             type: crypto.signal as 'PUMP' | 'DUMP',
             price: crypto.price,
-            change: crypto.change,
+            change: crypto.change ?? 0,
             volume: crypto.volume,
             timestamp: detectionTime,
             detectionTime: format(detectionTime, 'HH:mm'),
@@ -353,14 +353,14 @@ export function PumpDumpTracker({ isDark, cryptoData }: PumpDumpTrackerProps) {
             {/* Column 3: Percentage & Signal */}
             <div className="min-w-[100px]">
               <div className={`flex items-center text-xs font-medium mb-1 ${
-                event.change > 0 ? 'text-emerald-400' : 'text-red-400'
+                (event.change ?? 0) > 0 ? 'text-emerald-400' : 'text-red-400'
               }`}>
-                {event.change > 0 ? (
+                {(event.change ?? 0) > 0 ? (
                   <TrendingUp className="w-3 h-3 mr-1 flex-shrink-0" />
                 ) : (
                   <TrendingDown className="w-3 h-3 mr-1 flex-shrink-0" />
                 )}
-                <span className="truncate">{event.change > 0 ? '+' : ''}{event.change.toFixed(2)}%</span>
+                <span className="truncate">{(event.change ?? 0) > 0 ? '+' : ''}{(event.change ?? 0).toFixed(2)}%</span>
               </div>
               <div className={`text-xs ${
                 isDark ? 'text-gray-400' : 'text-gray-600'

@@ -28,8 +28,8 @@ export function CryptoCard({
 }: CryptoCardProps) {
   const [showAIModal, setShowAIModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const isPositive = change > 0;
-  const isNeutral = change === 0;
+  const isPositive = (change ?? 0) > 0;
+  const isNeutral = (change ?? 0) === 0;
   const isPumpSignal = signal === 'PUMP';
   const isDumpSignal = signal === 'DUMP';
   const isNeutralSignal = signal === 'NEUTRAL';
@@ -212,7 +212,7 @@ export function CryptoCard({
               ) : !isNeutral ? (
                 <TrendingDown className="w-4 h-4" />
               ) : null}
-              {change > 0 ? '+' : ''}{change.toFixed(2)}%
+              {(change ?? 0) > 0 ? '+' : ''}{(change ?? 0).toFixed(2)}%
             </div>
           </div>
 

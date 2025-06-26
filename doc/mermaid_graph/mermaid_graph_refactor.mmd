@@ -1,17 +1,66 @@
 graph TB
-    subgraph "CURRENT: Post-AIStrategyModal State"
-        A1[app/page.tsx<br/>1,019 lines<br/>God Component] --> A2[AIStrategyModal.tsx<br/>320 lines<br/>REFACTORED]
-        A1 --> A3[PumpDumpTracker.tsx<br/>809 lines<br/>Complex Tracker]
-        A1 --> A4[CryptoDetailModal.tsx<br/>491 lines<br/>Feature-Heavy Modal]
-        A1 --> A5[CryptoDisplayControls.tsx<br/>451 lines<br/>Multiple UI Concerns]
-        A1 --> A6[lib/apiClient.ts<br/>442 lines<br/>Mixed Concerns]
+    subgraph "CURRENT: Post-Major Refactoring State (Jan 2025)"
+        A1[app/page.tsx<br/>312 lines<br/>REFACTORED] --> A2[AIStrategyModal.tsx<br/>320 lines<br/>REFACTORED]
+        A1 --> A3[PumpDumpTracker.tsx<br/>809 lines<br/>NEEDS REFACTORING]
+        A1 --> A4[CryptoDetailModal.tsx<br/>491 lines<br/>NEEDS OPTIMIZATION]
+        A1 --> A5[CryptoDisplayControls.tsx<br/>451 lines<br/>NEEDS SPLITTING]
+        A1 --> A6[lib/apiClient.ts<br/>442 lines<br/>NEEDS SPLITTING]
         
-        style A1 fill:#ff6b6b,stroke:#d63031,color:#fff
+        subgraph "Extracted Custom Hooks"
+            H1[useCryptoData.ts<br/>197 lines]
+            H2[useCryptoFiltering.ts<br/>193 lines]
+            H3[useDisplaySettings.ts<br/>115 lines]
+            H4[useDetectionSettings.ts<br/>62 lines]
+            H5[useFavorites.ts<br/>60 lines]
+            H6[useTheme.ts<br/>47 lines]
+        end
+        
+        subgraph "Extracted UI Components"
+            U1[AppHeader.tsx<br/>56 lines]
+            U2[ErrorState.tsx<br/>47 lines]
+            U3[CryptoGrid.tsx<br/>43 lines]
+            U4[CryptoList.tsx<br/>43 lines]
+            U5[NoResultsMessage.tsx<br/>41 lines]
+            U6[LoadingState.tsx<br/>30 lines]
+            U7[ConnectionBanner.tsx<br/>22 lines]
+        end
+        
+        A1 --> H1
+        A1 --> H2
+        A1 --> H3
+        A1 --> H4
+        A1 --> H5
+        A1 --> H6
+        
+        A1 --> U1
+        A1 --> U2
+        A1 --> U3
+        A1 --> U4
+        A1 --> U5
+        A1 --> U6
+        A1 --> U7
+        
+        style A1 fill:#00b894,stroke:#00a085,color:#fff
         style A2 fill:#00b894,stroke:#00a085,color:#fff
         style A3 fill:#ff6b6b,stroke:#d63031,color:#fff
         style A4 fill:#fdcb6e,stroke:#e17055,color:#000
         style A5 fill:#fdcb6e,stroke:#e17055,color:#000
         style A6 fill:#fdcb6e,stroke:#e17055,color:#000
+        
+        style H1 fill:#6c5ce7,stroke:#5f3dc4,color:#fff
+        style H2 fill:#6c5ce7,stroke:#5f3dc4,color:#fff
+        style H3 fill:#6c5ce7,stroke:#5f3dc4,color:#fff
+        style H4 fill:#6c5ce7,stroke:#5f3dc4,color:#fff
+        style H5 fill:#6c5ce7,stroke:#5f3dc4,color:#fff
+        style H6 fill:#6c5ce7,stroke:#5f3dc4,color:#fff
+        
+        style U1 fill:#0984e3,stroke:#0066cc,color:#fff
+        style U2 fill:#0984e3,stroke:#0066cc,color:#fff
+        style U3 fill:#0984e3,stroke:#0066cc,color:#fff
+        style U4 fill:#0984e3,stroke:#0066cc,color:#fff
+        style U5 fill:#0984e3,stroke:#0066cc,color:#fff
+        style U6 fill:#0984e3,stroke:#0066cc,color:#fff
+        style U7 fill:#0984e3,stroke:#0066cc,color:#fff
     end
     
     subgraph "TARGET: Clean Architecture"

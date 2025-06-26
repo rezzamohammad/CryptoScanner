@@ -84,10 +84,10 @@ export function useCryptoFiltering(
         filtered.sort((a, b) => parseVolume(a.volume) - parseVolume(b.volume));
         break;
       case 'change-desc':
-        filtered.sort((a, b) => b.change - a.change);
+        filtered.sort((a, b) => (b.change ?? 0) - (a.change ?? 0));
         break;
       case 'change-asc':
-        filtered.sort((a, b) => a.change - b.change);
+        filtered.sort((a, b) => (a.change ?? 0) - (b.change ?? 0));
         break;
       case 'signal-pump':
         filtered = filtered.filter(crypto => crypto.signal === 'PUMP');
@@ -120,10 +120,10 @@ export function useCryptoFiltering(
             filtered.sort((a, b) => parseVolume(a.volume) - parseVolume(b.volume));
             break;
           case 'change-desc':
-            filtered.sort((a, b) => b.change - a.change);
+            filtered.sort((a, b) => (b.change ?? 0) - (a.change ?? 0));
             break;
           case 'change-asc':
-            filtered.sort((a, b) => a.change - b.change);
+            filtered.sort((a, b) => (a.change ?? 0) - (b.change ?? 0));
             break;
           case 'signal-pump':
             filtered = filtered.filter(crypto => crypto.signal === 'PUMP');

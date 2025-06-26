@@ -5,10 +5,11 @@ interface AppHeaderProps {
   isDark: boolean;
   connectionStatus: string;
   lastUpdateTime: Date | null;
+  backendSyncing?: boolean;
   onThemeToggle: () => void;
 }
 
-export function AppHeader({ isDark, connectionStatus, lastUpdateTime, onThemeToggle }: AppHeaderProps) {
+export function AppHeader({ isDark, connectionStatus, lastUpdateTime, backendSyncing = false, onThemeToggle }: AppHeaderProps) {
   return (
     <div className="flex items-center justify-between mb-8">
       <div className="flex items-center space-x-3">
@@ -29,13 +30,33 @@ export function AppHeader({ isDark, connectionStatus, lastUpdateTime, onThemeTog
       
       <div className="flex items-center space-x-4">
         <div className="flex items-center space-x-2">
-          <div className={`w-2 h-2 rounded-full ${
-            connectionStatus === 'connected'
-              ? 'bg-emerald-500 neon-emerald-pulse'
-              : connectionStatus === 'connecting'
-              ? 'bg-yellow-500 animate-pulse'
-              : 'bg-red-500 animate-pulse'
-          }`}></div>
+          <div className="relative">
+            <div className={`w-2 h-2 rounded-full ${
+              connectionStatus === 'connected'
+                ? 'bg-emerald-500'
+                : connectionStatus === 'connecting'
+                ? 'bg-yellow-500 animate-pulse'
+                : 'bg-red-500 animate-pulse'
+            }`}></div>
+            {connectionStatus === 'connected' && backendSyncing && (
+              <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-500 opacity-75" style={{
+                animation: 'ping 1s cubic-bezier(0, 0, 0.2, 1) infinite'
+              }}></div>
+            )}
+            {connectionStatus === 'connected' && backendSyncing && (
+              <div className="absolute -inset-1 w-4 h-4 rounded-full bg-emerald-500 opacity-50" style={{
+                animation: 'ping 2.5s cubic-bezier(0, 0, 0.2, 1) infinite 0.3s'
+              }}></div>
+            )}
+            {connectionStatus === 'connected' && backendSyncing && (
+              <div className="absolute -inset-2 w-6 h-6 rounded-full bg-emerald-500 opacity-25" style={{
+                animation: 'ping 5s cubic-bezier(0, 0, 0.2, 1) infinite 0.6s'
+              }}></div>
+            )}
+            {connectionStatus === 'connected' && !backendSyncing && (
+              <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-500 neon-emerald-pulse"></div>
+            )}
+          </div>
           <span className={`text-sm ${
             isDark ? 'text-gray-300' : 'text-gray-600'
           }`}>
@@ -49,6 +70,7 @@ export function AppHeader({ isDark, connectionStatus, lastUpdateTime, onThemeTog
               • {lastUpdateTime.toLocaleTimeString()}
             </span>
           )}
+
         </div>
         <ThemeToggle isDark={isDark} onToggle={onThemeToggle} />
       </div>

@@ -23,11 +23,9 @@ const MOCK_CRYPTO_DATA: FrontendCryptoData[] = [
     volumeValue: 28500000000,
     signal: 'PUMP',
     detectionTime: new Date(),
-    chartData: Array.from({ length: 24 }, (_, i) => ({
-      time: new Date(Date.now() - (23 - i) * 60 * 60 * 1000).toISOString(),
-      price: 43000 + Math.random() * 500,
-      volume: Math.random() * 1000000000
-    }))
+    chartData: Array.from({ length: 24 }, (_, i) =>
+      43000 + Math.random() * 500
+    )
   }
 ];
 
@@ -65,22 +63,24 @@ export function useCryptoData(
     let isMounted = true;
 
     const fetchInitialData = async () => {
-      if (!isThemeLoaded) return;
+      if (!isThemeLoaded) {
+        console.log('⏳ Theme not loaded yet, skipping data fetch');
+        return;
+      }
 
       try {
         setConnectionStatus('connecting');
-        console.log('🔄 Fetching initial crypto data...');
+        console.log('🔄 Fetching initial crypto data from:', 'http://localhost:3001/api/market/tickers');
 
         const response = await retryWithBackoff(
-          () => ApiClient.getCryptoData(),
-          3,
-          1000
+          () => ApiClient.getTickers({ limit: 100 }),
+          3
         );
 
         if (!isMounted) return;
 
-        if (response && Array.isArray(response)) {
-          const transformedData = response.map(transformBackendData);
+        if (response && response.success && Array.isArray(response.data)) {
+          const transformedData = transformBackendData(response.data);
           setCryptoData(transformedData);
           setConnectionStatus('connected');
           setLastUpdateTime(new Date());
@@ -95,13 +95,10 @@ export function useCryptoData(
         handleApiError(error);
         setConnectionStatus('error');
 
-        // Fallback to mock data if enabled
-        const useMockFallback = process.env.NEXT_PUBLIC_ENABLE_MOCK_FALLBACK === 'true';
-        if (useMockFallback) {
-          console.log('🔄 Falling back to mock data due to API error');
-          setCryptoData(MOCK_CRYPTO_DATA);
-          setConnectionStatus('connected');
-        }
+        // Keep error state - no mock fallback
+        console.log('❌ API connection failed - waiting for backend connection');
+        setCryptoData([]);
+        setConnectionStatus('error');
       }
     };
 
@@ -114,75 +111,55 @@ export function useCryptoData(
 
   // WebSocket connection management
   useEffect(() => {
-    if (!isThemeLoaded || connectionStatus !== 'connected') return;
+    if (!isThemeLoaded) return;
 
-    let reconnectAttempts = 0;
-    const maxReconnectAttempts = 5;
-    let reconnectTimeout: NodeJS.Timeout;
+    console.log('🔌 Setting up WebSocket listeners...');
 
-    const connectWebSocket = () => {
+    // Handle WebSocket connection events
+    const handleConnected = () => {
+      console.log('✅ WebSocket connected');
+      setConnectionStatus('connected');
+    };
+
+    const handleMarketUpdate = (payload: any) => {
       try {
-        console.log('🔌 Connecting to WebSocket...');
-
-        wsClient.connect({
-          onOpen: () => {
-            console.log('✅ WebSocket connected');
-            setConnectionStatus('connected');
-            reconnectAttempts = 0;
-          },
-          onMessage: (data) => {
-            try {
-              if (Array.isArray(data)) {
-                const transformedData = data.map(transformBackendData);
-                setCryptoData(transformedData);
-                setLastUpdateTime(new Date());
-                console.log('📊 Received WebSocket update:', transformedData.length, 'items');
-              }
-            } catch (error) {
-              console.error('❌ Error processing WebSocket data:', error);
-              logError(error, { context: 'websocket_data_processing' });
-            }
-          },
-          onError: (error) => {
-            console.error('❌ WebSocket error:', error);
-            setConnectionStatus('error');
-            logError(error, { context: 'websocket_connection' });
-          },
-          onClose: () => {
-            console.log('🔌 WebSocket disconnected');
-            setConnectionStatus('disconnected');
-
-            // Attempt to reconnect with exponential backoff
-            if (reconnectAttempts < maxReconnectAttempts) {
-              const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
-              console.log(`🔄 Attempting to reconnect in ${delay}ms (attempt ${reconnectAttempts + 1}/${maxReconnectAttempts})`);
-              
-              reconnectTimeout = setTimeout(() => {
-                reconnectAttempts++;
-                connectWebSocket();
-              }, delay);
-            } else {
-              console.error('❌ Max reconnection attempts reached');
-              setConnectionStatus('error');
-            }
-          }
-        });
+        if (payload && Array.isArray(payload.data)) {
+          const transformedData = transformBackendData(payload.data);
+          setCryptoData(transformedData);
+          setLastUpdateTime(new Date());
+          console.log('📊 Received WebSocket update:', transformedData.length, 'items');
+        }
       } catch (error) {
-        console.error('❌ Failed to connect WebSocket:', error);
-        setConnectionStatus('error');
-        logError(error, { context: 'websocket_connection_init' });
+        console.error('❌ Error processing WebSocket data:', error);
+        logError(error as Error, 'websocket_data_processing');
       }
     };
 
-    connectWebSocket();
+    const handleError = (error: any) => {
+      console.error('❌ WebSocket error:', error);
+      setConnectionStatus('error');
+      logError(error as Error, 'websocket_connection');
+    };
+
+    const handleDisconnected = () => {
+      console.log('🔌 WebSocket disconnected');
+      setConnectionStatus('disconnected');
+    };
+
+    // Add event listeners
+    wsClient.on('connected', handleConnected);
+    wsClient.on('market_update', handleMarketUpdate);
+    wsClient.on('error', handleError);
+    wsClient.on('disconnected', handleDisconnected);
 
     return () => {
-      if (reconnectTimeout) {
-        clearTimeout(reconnectTimeout);
-      }
-      wsClient.disconnect();
+      // Clean up event listeners
+      wsClient.off('connected', handleConnected);
+      wsClient.off('market_update', handleMarketUpdate);
+      wsClient.off('error', handleError);
+      wsClient.off('disconnected', handleDisconnected);
     };
-  }, [isThemeLoaded, connectionStatus]);
+  }, [isThemeLoaded]);
 
   // Sync settings when they change
   useEffect(() => {
